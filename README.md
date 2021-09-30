@@ -1,116 +1,120 @@
-[![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/big-data-europe/Lobby)
-[![Build Status](https://travis-ci.org/big-data-europe/docker-spark.svg?branch=master)](https://travis-ci.org/big-data-europe/docker-spark)
-[![Twitter](https://img.shields.io/twitter/follow/BigData_Europe.svg?style=social)](https://twitter.com/BigData_Europe)
-# Spark docker
+# Spark를 이용한 RDD 연산실습
 
-Docker images to:
-* Setup a standalone [Apache Spark](https://spark.apache.org/) cluster running one Spark Master and multiple Spark workers
-* Build Spark applications in Java, Scala or Python to run on a Spark cluster
 
-<details open>
-<summary>Currently supported versions:</summary>
+## Spark 내려 받기
 
-* Spark 3.1.1 for Hadoop 3.2 with OpenJDK 8 and Scala 2.12
-* Spark 3.1.1 for Hadoop 3.2 with OpenJDK 11 and Scala 2.12
-* Spark 3.0.2 for Hadoop 3.2 with OpenJDK 8 and Scala 2.12
-* Spark 3.0.1 for Hadoop 3.2 with OpenJDK 8 and Scala 2.12
-* Spark 3.0.0 for Hadoop 3.2 with OpenJDK 11 and Scala 2.12
-* Spark 3.0.0 for Hadoop 3.2 with OpenJDK 8 and Scala 2.12
-* Spark 2.4.5 for Hadoop 2.7+ with OpenJDK 8
-* Spark 2.4.4 for Hadoop 2.7+ with OpenJDK 8
-* Spark 2.4.3 for Hadoop 2.7+ with OpenJDK 8
-* Spark 2.4.1 for Hadoop 2.7+ with OpenJDK 8
-* Spark 2.4.0 for Hadoop 2.8 with OpenJDK 8 and Scala 2.12
-* Spark 2.4.0 for Hadoop 2.7+ with OpenJDK 8
-* Spark 2.3.2 for Hadoop 2.7+ with OpenJDK 8
-* Spark 2.3.1 for Hadoop 2.7+ with OpenJDK 8
-* Spark 2.3.1 for Hadoop 2.8 with OpenJDK 8
-* Spark 2.3.0 for Hadoop 2.7+ with OpenJDK 8
-* Spark 2.2.2 for Hadoop 2.7+ with OpenJDK 8
-* Spark 2.2.1 for Hadoop 2.7+ with OpenJDK 8
-* Spark 2.2.0 for Hadoop 2.7+ with OpenJDK 8
-* Spark 2.1.3 for Hadoop 2.7+ with OpenJDK 8
-* Spark 2.1.2 for Hadoop 2.7+ with OpenJDK 8
-* Spark 2.1.1 for Hadoop 2.7+ with OpenJDK 8
-* Spark 2.1.0 for Hadoop 2.7+ with OpenJDK 8
-* Spark 2.0.2 for Hadoop 2.7+ with OpenJDK 8
-* Spark 2.0.1 for Hadoop 2.7+ with OpenJDK 8
-* Spark 2.0.0 for Hadoop 2.7+ with Hive support and OpenJDK 8
-* Spark 2.0.0 for Hadoop 2.7+ with Hive support and OpenJDK 7
-* Spark 1.6.2 for Hadoop 2.6 and later
-* Spark 1.5.1 for Hadoop 2.6 and later
+- windows terminal or mac terminal을 연다. 
+- 소스 코드를 다운 받을 적당한 디렉토리로 이동한다.  
+- git 명령어를 이용해 Spark를 내려 받는다. 
 
-</details>
-
-## Using Docker Compose
-
-Add the following services to your `docker-compose.yml` to integrate a Spark master and Spark worker in [your BDE pipeline](https://github.com/big-data-europe/app-bde-pipeline):
-```yml
-version: '3'
-services:
-  spark-master:
-    image: bde2020/spark-master:3.1.1-hadoop3.2
-    container_name: spark-master
-    ports:
-      - "8080:8080"
-      - "7077:7077"
-    environment:
-      - INIT_DAEMON_STEP=setup_spark
-  spark-worker-1:
-    image: bde2020/spark-worker:3.1.1-hadoop3.2
-    container_name: spark-worker-1
-    depends_on:
-      - spark-master
-    ports:
-      - "8081:8081"
-    environment:
-      - "SPARK_MASTER=spark://spark-master:7077"
-  spark-worker-2:
-    image: bde2020/spark-worker:3.1.1-hadoop3.2
-    container_name: spark-worker-2
-    depends_on:
-      - spark-master
-    ports:
-      - "8082:8081"
-    environment:
-      - "SPARK_MASTER=spark://spark-master:7077"
 ```
-Make sure to fill in the `INIT_DAEMON_STEP` as configured in your pipeline.
+git clone https://github.com/CUKykkim/docker-spark.git
+```
 
-## Running Docker containers without the init daemon
-### Spark Master
-To start a Spark master:
 
-    docker run --name spark-master -h spark-master -e ENABLE_INIT_DAEMON=false -d bde2020/spark-master:3.1.1-hadoop3.2
+## Spark 수행하기
 
-### Spark Worker
-To start a Spark worker:
+- git을 통해 다운 받은 디렉토리 안으로 들어간다. 
 
-    docker run --name spark-worker-1 --link spark-master:spark-master -e ENABLE_INIT_DAEMON=false -d bde2020/spark-worker:3.1.1-hadoop3.2
+```
+cd docker-spark
+```
 
-## Launch a Spark application
-Building and running your Spark application on top of the Spark cluster is as simple as extending a template Docker image. Check the template's README for further documentation.
-* [Java template](template/java)
-* [Python template](template/python)
-* [Scala template](template/scala)
+- `docker-compose` 명령어를 이용해 스파크 컨테이너를 띄운다. 
+  
+```
+docker-compose up
+```
 
-## Kubernetes deployment
-The BDE Spark images can also be used in a Kubernetes enviroment.
+- 컨테이너가 모두 수행이 되면 컨테이너는 다음과 같은 상태가 됨
 
-To deploy a simple Spark standalone cluster issue
+```
+docker ps
+```
 
-`kubectl apply -f https://raw.githubusercontent.com/big-data-europe/docker-spark/master/k8s-spark-cluster.yaml`
+```
+CONTAINER ID   IMAGE                    COMMAND                  CREATED              STATUS          PORTS
+                   NAMES
+edb3f8d728c9   ykkim77/spark-worker-1   "/bin/bash /worker.sh"   42 seconds ago       Up 36 seconds   0.0.0.0:8081->8081/tcp, :::8081->8081/tcp
+                   spark-worker-1
+349f58d01f67   ykkim77/spark-master     "/bin/bash /master.sh"   About a minute ago   Up 39 seconds   0.0.0.0:7077->7077/tcp, :::7077->7077/tcp, 6066/tcp, 0.0.0.0:8080->8080/tcp, :::8080->8080/tcp   spark-master
+```
 
-This will setup a Spark standalone cluster with one master and a worker on every available node using the default namespace and resources. The master is reachable in the same namespace at `spark://spark-master:7077`.
-It will also setup a headless service so spark clients can be reachable from the workers using hostname `spark-client`.
 
-Then to use `spark-shell` issue
+- terminal 탭을 하나 더 열어, spark-master 컨테이너로 진입
 
-`kubectl run spark-base --rm -it --labels="app=spark-client" --image bde2020/spark-base:3.1.1-hadoop3.2 -- bash ./spark/bin/spark-shell --master spark://spark-master:7077 --conf spark.driver.host=spark-client`
+```
+docker exec -it spark-master /bin/bash
+```
 
-To use `spark-submit` issue for example
+- spark가 설치된 경로의 디렉토리로 이동
 
-`kubectl run spark-base --rm -it --labels="app=spark-client" --image bde2020/spark-base:3.1.1-hadoop3.2 -- bash ./spark/bin/spark-submit --class CLASS_TO_RUN --master spark://spark-master:7077 --deploy-mode client --conf spark.driver.host=spark-client URL_TO_YOUR_APP`
+```
+cd  ~/../spark/bin/
+```
 
-You can use your own image packed with Spark and your application but when deployed it must be reachable from the workers.
-One way to achieve this is by creating a headless service for your pod and then use `--conf spark.driver.host=YOUR_HEADLESS_SERVICE` whenever you submit your application.
+- python으로 spark을 연산을 수행할 수 있는 스파크쉘 수행
+
+```
+./pyspark
+```
+
+```
+Welcome to
+      ____              __
+     / __/__  ___ _____/ /__
+    _\ \/ _ \/ _ `/ __/  '_/
+   /__ / .__/\_,_/_/ /_/\_\   version 3.1.1
+      /_/
+
+Using Python version 3.7.10 (default, Mar  2 2021 09:06:08)
+Spark context Web UI available at http://349f58d01f67:4040
+Spark context available as 'sc' (master = local[*], app id = local-1632992284633).
+SparkSession available as 'spark'.
+```
+
+
+## RDD 연산 수행하기
+
+- 다양한 RDD 연산의 종류는 [스파크 공식 문서](https://spark.apache.org/docs/1.2.0/programming-guide.html#transformations)를 참고
+
+### 리스트 기반의 데이터를 RDD로 생성후 연산하기
+
+```
+data1 = [1, 2, 3, 4, 5]
+data2 = [4, 5, 6, 7, 8]
+rdd1 = sc.parallelize(data1)   # rdd1 생성
+rdd2 = sc.parallelize(data2)   # rdd2 생성
+rdd3 = rdd1.union(rdd2)        # rdd1과 rdd2를 합집합 하여 rdd3를 생성
+
+rdd3.collect()     # rdd3에 대해 Action 수행
+
+```
+
+### 파일 기반으로 workdcount (단어수 세기) 만들기
+
+```
+wcRdd = spark.sparkContext.textFile(os.path.join('input.txt'))
+wcRdd.collect()
+
+wcRdd1 = wcRdd.map(lambda x:x.split(' '))
+wcRdd1.collect()
+
+wcRdd2 = wcRdd1.map(lambda x:(x,1))
+wcRdd2.collect()
+
+wcRdd3 = wcRdd2.groupByKey()
+wcRdd3.collect()
+
+wcRdd4 = wcRdd3.mapValues(sum)
+wcRdd4.collect()
+
+```
+
+
+## spark 컨테이너 종료
+
+```
+docker-compose down
+```
+
