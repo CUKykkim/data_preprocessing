@@ -118,3 +118,44 @@ wcRdd4.collect()
 docker-compose down
 ```
 
+
+
+```
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import col
+
+
+spark: SparkSession = SparkSession.builder \
+    .master("local[1]") \
+    .appName("SparkByExamples.com") \
+    .getOrCreate()
+
+df = spark.read.csv('chipotle.csv', header = True, inferSchema = True)
+
+
+df.printSchema()
+df.show()
+
+
+print("Total number of :",df.filter(df.choice_description.isNull()).count())
+
+
+
+df1= df.na.drop(how="any")
+df1.show(truncate=False)
+df1.dropDuplicates(['item_name']).show()
+df.show()
+```
+
+## iris 데이터로 주성분 분석하기
+
+- iris 데이터셋
+```
+ caseno	        일련번호
+ Sepal Length	꽃받침의 길이 정보
+ Sepal Width	꽃받침의 너비 정보
+ Petal Length	꽃잎의 길이 정보
+ Petal Width	꽃잎의 너비 정보  
+ Species	    꽃의 종류 정보  setosa / versicolor / virginica 3종류
+```
+![Large53](./images/Large53.jpg)
