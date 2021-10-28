@@ -147,7 +147,7 @@ df1.dropDuplicates(['item_name']).show()
 df.show()
 ```
 
-## iris 데이터로 주성분 분석하기
+## iris 데이터로 주성분 분석하기   (출처: https://towardsdatascience.com/pca-using-python-scikit-learn-e653f8989e60)
 
 - iris 데이터셋
 ```
@@ -158,4 +158,50 @@ df.show()
  Petal Width	꽃잎의 너비 정보  
  Species	    꽃의 종류 정보  setosa / versicolor / virginica 3종류
 ```
+
+![1_Qt_pYlwBeHtTewnEdksYKQ](./images/1_Qt_pYlwBeHtTewnEdksYKQ.png)
+
 ![Large53](./images/Large53.jpg)
+
+- iris 데이터 셋의 정규화
+iris 데이터셋을 평균이 0, 표준편차 1인 분포를 갖도록 스케일링
+
+
+![1_Qxyo-uDrmsUzdxIe7Nnsmg](./images/1_Qxyo-uDrmsUzdxIe7Nnsmg.png)
+
+
+- iris 데이셋의 차원 축소
+기존 4개의 차원을, 2개의 차원으로 축소
+
+![1_7jUCr36YguAMKNHTN4Gt8A](./images/1_7jUCr36YguAMKNHTN4Gt8A.png)
+
+
+
+- 차원 축소후, 군집화를 한다면? 
+
+![1_duZ0MeNS6vfc35XtYr88Bg](./images/1_duZ0MeNS6vfc35XtYr88Bg.png)
+
+
+```
+from pyspark.sql import SparkSession
+from pyspark.ml.feature import PCA, VectorAssembler, StandardScaler
+
+
+spark: SparkSession = SparkSession.builder \
+    .master("local[1]") \
+    .appName("SparkByExamples.com") \
+    .getOrCreate()
+
+iris = spark.read.csv('iris.csv', header = True, inferSchema = True)
+assembler = VectorAssembler(
+    inputCols = ["sepal_length","sepal_width","petal_length","petal_width"], outputCol = 'features')
+
+output = assembler.transform(iris)
+
+output.printSchema()
+output.show()
+
+pca = PCA().setInputCol("features").setK(2)
+pca.fit(output).transform(output).show(20,False)
+```
+
