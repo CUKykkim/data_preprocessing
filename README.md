@@ -8,7 +8,7 @@
 - git 명령어를 이용해 Spark를 내려 받는다. 
 
 ```
-git clone https://github.com/CUKykkim/docker-spark.git
+git clone https://github.com/CUKykkim/data_preprocessing.git
 ```
 
 
@@ -17,7 +17,7 @@ git clone https://github.com/CUKykkim/docker-spark.git
 - git을 통해 다운 받은 디렉토리 안으로 들어간다. 
 
 ```
-cd docker-spark
+cd data_preprocessing
 ```
 
 - `docker-compose` 명령어를 이용해 스파크 컨테이너를 띄운다. 
@@ -53,11 +53,21 @@ docker exec -it spark-master /bin/bash
 cd  ~/../spark/bin/
 ```
 
+
+
+
+## 결측치 처리 - spark 쉘로 수행하기
+
+
 - python으로 spark을 연산을 수행할 수 있는 스파크쉘 수행
 
 ```
 ./pyspark
 ```
+
+
+
+
 
 ```
 Welcome to
@@ -74,60 +84,40 @@ SparkSession available as 'spark'.
 ```
 
 
-## RDD 연산 수행하기
-
-- 다양한 RDD 연산의 종류는 [스파크 공식 문서](https://spark.apache.org/docs/1.2.0/programming-guide.html#transformations)를 참고
-
-### 리스트 기반의 데이터를 RDD로 생성후 연산하기
-
 ```
-data1 = [1, 2, 3, 4, 5]
-data2 = [4, 5, 6, 7, 8]
-rdd1 = sc.parallelize(data1)   # rdd1 생성
-rdd2 = sc.parallelize(data2)   # rdd2 생성
-rdd3 = rdd1.union(rdd2)        # rdd1과 rdd2를 합집합 하여 rdd3를 생성
+df = spark.read.csv('chipotle.csv', header = True, inferSchema = True)  //데이터셋 로드
+df.printSchema()     // 데이터셋의 스키마 살펴보기
+df.show()             // 데이터셋 보기
 
-rdd3.collect()     # rdd3에 대해 Action 수행
+print("Total number of :",df.filter(df.choice_description.isNull()).count())   // 결측치 갯수
+df1= df.na.drop(how="any")      //결측치 제거
+df1.show(truncate=False)       // 결측치 제거된 dataset 확인하기
+df2=df1.dropDuplicates(['item_name'])   // item_name 컬럼의 중복 데이터 제거
+
+df2.show()     // 중복 데이터 제거된 데이터셋 확인하기
 
 ```
 
-### 파일 기반으로 workdcount (단어수 세기) 만들기
+## 결측치 처리 - python application으로 수행하기
+
+- vi 편집기를 열어 missinvalue.py 라는 파이썬 파일을 새로 연다
 
 ```
-wcRdd = spark.sparkContext.textFile(os.path.join('input.txt'))
-wcRdd.collect()
-
-wcRdd1 = wcRdd.map(lambda x:x.split(' '))
-wcRdd1.collect()
-
-wcRdd2 = wcRdd1.map(lambda x:(x,1))
-wcRdd2.collect()
-
-wcRdd3 = wcRdd2.groupByKey()
-wcRdd3.collect()
-
-wcRdd4 = wcRdd3.mapValues(sum)
-wcRdd4.collect()
-
+vi missingvalue.py
 ```
 
 
-## spark 컨테이너 종료
-
-```
-docker-compose down
-```
-
-
+- a를 입력하여 쓰기모드로 변환한후 다음 코드를 작성한다. 
+- esc를 눌러 읽기모드로 변환한후 :wq 를 눌러 저장후 빠져나온다.
 
 ```
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col
 
 
-spark: SparkSession = SparkSession.builder \
-    .master("local[1]") \
-    .appName("SparkByExamples.com") \
+spark: SparkSession = SparkSession.builder \      // spark session 열기
+    .master("local[*]") \                        // local에 있는 cpu core의 갯수만큼 스레드를 생성해서 병렬처리
+    .appName("missingvalue") \                  //app 이름
     .getOrCreate()
 
 df = spark.read.csv('chipotle.csv', header = True, inferSchema = True)
@@ -143,8 +133,8 @@ print("Total number of :",df.filter(df.choice_description.isNull()).count())
 
 df1= df.na.drop(how="any")
 df1.show(truncate=False)
-df1.dropDuplicates(['item_name']).show()
-df.show()
+df2=df1.dropDuplicates(['item_name'])
+df2.show()
 ```
 
 ## iris 데이터로 주성분 분석하기   (출처: https://towardsdatascience.com/pca-using-python-scikit-learn-e653f8989e60)
@@ -182,26 +172,43 @@ iris 데이터셋을 평균이 0, 표준편차 1인 분포를 갖도록 스케�
 ![1_duZ0MeNS6vfc35XtYr88Bg](./images/1_duZ0MeNS6vfc35XtYr88Bg.png)
 
 
+
+## 결측치 처리 - iris 데이터 전처리 하고, PCA로 차원축소하기
+
+
 ```
 from pyspark.sql import SparkSession
-from pyspark.ml.feature import PCA, VectorAssembler, StandardScaler
+from pyspark.ml.feature import StandardScaler
 
-
-spark: SparkSession = SparkSession.builder \
-    .master("local[1]") \
-    .appName("SparkByExamples.com") \
+spark: SparkSession = SparkSession.builder \      // spark session 열기
+    .master("local[*]") \                        // local에 있는 cpu core의 갯수만큼 스레드를 생성해서 병렬처리
+    .appName("missingvalue") \                  //app 이름
     .getOrCreate()
 
-iris = spark.read.csv('iris.csv', header = True, inferSchema = True)
+iris = spark.read.csv('iris.csv', header = True, inferSchema = True)  // 데이터셋 읽기
+
 assembler = VectorAssembler(
-    inputCols = ["sepal_length","sepal_width","petal_length","petal_width"], outputCol = 'features')
+    inputCols = ["sepal_length","sepal_width","petal_length","petal_width"], outputCol = 'features')  // 벡터 assemble
 
 output = assembler.transform(iris)
 
 output.printSchema()
 output.show()
 
-pca = PCA().setInputCol("features").setK(2)
-pca.fit(output).transform(output).show(20,False)
+sScaler = StandardScaler().setInputCol("features")
+standard=sScaler.fit(output).transform(output)
+standard.show()
+
+pca = PCA().setInputCol("StandardScaler_29618fe1fee2__output").setK(2)        // feature를 2차원으로 PCA를 이용해 차원 축소
+pca.fit(standard).transform(standard).show(20,False)   
+```
+
+
+
+
+## spark 컨테이너 종료
+
+```
+docker-compose down
 ```
 
