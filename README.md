@@ -139,7 +139,7 @@ df2.show()
 
 ## iris 데이터로 주성분 분석하기
 
-(출처: `https://towardsdatascience.com/ca-using-python-scikit-learn-e653f8989e60`)
+(출처: https://towardsdatascience.com/ca-using-python-scikit-learn-e653f8989e60)
 
 - iris 데이터셋
 ```
