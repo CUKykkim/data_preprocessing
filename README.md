@@ -198,7 +198,7 @@ standard.show()
 
 pca = PCA().setInputCol("scaled").setK(2)
 pca.fit(standard).transform(standard).show(20,False)
-
+```
 
 
 
