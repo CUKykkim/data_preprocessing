@@ -2,15 +2,15 @@ version: '3'
 services:
   spark-master:
     image: ykkim77/spark-master
-    container_name: spark-master
+    container_name: spark-master:datapreprocessing
     ports:
       - "8080:8080"
       - "7077:7077"
     environment:
       - INIT_DAEMON_STEP=setup_spark
   spark-worker-1:
-    image: ykkim77/spark-worker-1:datapreprocessing
-    container_name: spark-worvker-1
+    image: ykkim77/spark-worker-1
+    container_name: spark-worker-1
     depends_on:
       - spark-master
     ports:
