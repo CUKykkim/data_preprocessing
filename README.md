@@ -182,20 +182,25 @@ from pyspark.ml.feature import StandardScaler,VectorAssembler,PCA
 
 spark = SparkSession.builder.master("local[*]").appName("pca").getOrCreate()
 
+// 파일 읽기
 iris = spark.read.csv('iris.csv', header = True, inferSchema = True)
 
+// 피쳐 벡터 어셈블
 assembler = VectorAssembler(
     inputCols = ["sepal_length","sepal_width","petal_length","petal_width"], outputCol = 'features')
+
 
 output = assembler.transform(iris)
 
 output.printSchema()
 output.show()
 
+// 평균 0, 표준편차 1로 데이터 정규화
 sScaler = StandardScaler(inputCol="features", outputCol="scaled")
 standard=sScaler.fit(output).transform(output)
 standard.show()
 
+//pca 수행
 pca = PCA().setInputCol("scaled").setK(2)
 pca.fit(standard).transform(standard).show(20,False)
 ```
