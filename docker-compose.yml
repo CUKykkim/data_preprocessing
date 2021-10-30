@@ -10,7 +10,7 @@ services:
       - INIT_DAEMON_STEP=setup_spark
   spark-worker-1:
     image: ykkim77/spark-worker-1:datapreprocessing
-    container_name: spark-worker-1:datapreprocessing
+    container_name: spark-worvker-1
     depends_on:
       - spark-master
     ports:
