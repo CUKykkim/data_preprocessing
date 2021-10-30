@@ -1,7 +1,7 @@
 version: '3'
 services:
   spark-master:
-    image: ykkim77/spark-master:datapreprocessing
+    image: ykkim77/spark-master:datapreprocessing2
     container_name: spark-master
     ports:
       - "8080:8080"
